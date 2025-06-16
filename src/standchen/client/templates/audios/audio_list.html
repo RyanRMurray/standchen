@@ -1,0 +1,7 @@
+{% if audio_list %}
+    <ul>
+        {% for audio in audio_list %}
+            <li><b>{{audio.name}}</b> ({{audio.pretty_length}}): {{audio.filepath}}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
