@@ -9,7 +9,7 @@ class ClientConfig(AppConfig):
     name = "standchen.player"
 
     def ready(self):
-        from standchen.player.player import StandchenClient
+        from standchen.player.models import StandchenClient
 
         global standchen_player
         standchen_player = StandchenClient()
