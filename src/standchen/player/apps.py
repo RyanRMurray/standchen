@@ -6,10 +6,10 @@ standchen_player = None
 
 class ClientConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "standchen.client"
+    name = "standchen.player"
 
     def ready(self):
-        from standchen.client.player import StandchenClient
+        from standchen.player.player import StandchenClient
 
         global standchen_player
         standchen_player = StandchenClient()

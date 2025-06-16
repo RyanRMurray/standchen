@@ -3,8 +3,8 @@ from typing import Optional
 from django.template import loader
 from django.http import HttpResponse, HttpResponseBadRequest
 
-from standchen.client.models import StandchenAudio
-from standchen.client.apps import standchen_player
+from standchen.player.models import StandchenAudio
+from standchen.player.apps import standchen_player
 
 client_coro: Optional[asyncio.Task] = None
 

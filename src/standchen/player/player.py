@@ -2,7 +2,7 @@ import asyncio
 from enum import Enum
 from typing import List, Optional
 from discord import FFmpegPCMAudio, VoiceClient
-from standchen.client.models import StandchenAudio
+from standchen.player.models import StandchenAudio
 
 
 class Repeat(Enum):
