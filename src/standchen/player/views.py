@@ -7,6 +7,10 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from standchen.player.models import StandchenAudio
 from standchen.player.apps import standchen_player
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 player_coro: Optional[asyncio.Task] = None
 
 
@@ -14,7 +18,7 @@ def ensure_started(func):
     async def wrapper(self, *args, **kwargs):
         if player_coro is None:
             await start()
-            return func(self, *args, **kwargs)
+            return await func(self, *args, **kwargs)
 
     return wrapper
 
@@ -22,6 +26,7 @@ def ensure_started(func):
 async def start():
     global player_coro
     if player_coro is None:
+        logger.info("Starting player coroutine")
         player_coro = asyncio.create_task(standchen_player.execute())
     else:
         raise RuntimeError("Player is already running")
@@ -47,6 +52,7 @@ def state(request: HttpRequest):
     return HttpResponse(standchen_player.pretty_print_state(), request)
 
 
+@ensure_started
 @require_GET
 async def queue(request: HttpRequest):
     id = request.GET.get("audio_id")

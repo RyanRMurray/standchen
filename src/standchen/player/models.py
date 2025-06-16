@@ -5,6 +5,9 @@ import os
 from typing import List, Optional
 from discord import FFmpegPCMAudio, VoiceClient
 from django.db import models
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class StandchenAudio(models.Model):
@@ -78,9 +81,11 @@ class StandchenClient:
         if self.voice_client:  # disconnect from old vc if needed
             if self.voice_client.channel != new_voice_client.channel:
                 await self.voice_client.disconnect()
-            return
+            else:
+                return
 
         self.voice_client = await new_voice_client.channel.connect()
+        logging.error("Set vc!!")
 
     @blocking
     async def set_repeat(self, setting: int):
