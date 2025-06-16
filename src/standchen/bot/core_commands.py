@@ -10,6 +10,7 @@ from discord.ext.commands import Cog
 from discord.interactions import Interaction
 
 from standchen.signals import SET_VC
+from standchen.player.views import state
 
 
 class StandchenBotCore(Cog, name="Standchen Discord core functionality"):
@@ -68,5 +69,5 @@ class StandchenBotCore(Cog, name="Standchen Discord core functionality"):
 
     @app_commands.command(description="Show the state of the queue.")
     async def show_queue(self, interaction: Interaction):
-        msg = self.client.pretty_print_state()
+        msg = state()
         await interaction.response.send_message(msg)

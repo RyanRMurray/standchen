@@ -14,24 +14,6 @@ logger = logging.getLogger(__name__)
 player_coro: Optional[asyncio.Task] = None
 
 
-def ensure_started(func):
-    async def wrapper(self, *args, **kwargs):
-        if player_coro is None:
-            await start()
-            return await func(self, *args, **kwargs)
-
-    return wrapper
-
-
-async def start():
-    global player_coro
-    if player_coro is None:
-        logger.info("Starting player coroutine")
-        player_coro = asyncio.create_task(standchen_player.execute())
-    else:
-        raise RuntimeError("Player is already running")
-
-
 async def end():
     global player_coro
     if player_coro is None:
@@ -48,11 +30,10 @@ def audios(request: HttpRequest):
     return HttpResponse(template.render(context, request))
 
 
-def state(request: HttpRequest):
-    return HttpResponse(standchen_player.pretty_print_state(), request)
+def state():
+    return standchen_player.pretty_print_state()
 
 
-@ensure_started
 @require_GET
 async def queue(request: HttpRequest):
     id = request.GET.get("audio_id")
