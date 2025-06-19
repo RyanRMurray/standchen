@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 from typing import List
 import discord
 from django.apps import AppConfig
@@ -56,12 +57,15 @@ class ClientConfig(AppConfig):
     name = "standchen.player"
     threads: List[Thread] = [BotThread(), PlayerThread()]
 
-    def ready(self):
+    def ready(self, *args, **kwargs):
+        # check if we're starting the server
+        is_run = any(arg.casefold() == "runserver" for arg in sys.argv)
         from standchen.player.models import StandchenPlayer
 
         global standchen_player
         standchen_player = StandchenPlayer()
 
-        # start bot and player
-        self.threads[0].start()  # bot
-        self.threads[1].start()  # player
+        if is_run:
+            # start bot and player
+            self.threads[0].start()  # bot
+            self.threads[1].start()  # player
