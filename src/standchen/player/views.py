@@ -5,7 +5,7 @@ from django.views.decorators.http import require_GET
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 
 from standchen.player.models import StandchenAudio
-from standchen.player.apps import standchen_player
+from standchen.player.apps import standchen_player as api
 
 import logging
 
@@ -30,8 +30,8 @@ def audios(request: HttpRequest):
     return HttpResponse(template.render(context, request))
 
 
-def state():
-    return standchen_player.pretty_print_state()
+def state(request: HttpRequest):
+    return HttpResponse(api.pretty_print_state(), request)
 
 
 @require_GET
@@ -43,7 +43,7 @@ async def queue(request: HttpRequest):
         return HttpResponseBadRequest("Not yet implemented", request)
 
     if filepath is not None:
-        result = await standchen_player.queue_local(filepath)
+        result = await api.queue_local(filepath)
         return HttpResponse(result)
 
     return HttpResponseBadRequest("Request should have an audio ID or filepath")

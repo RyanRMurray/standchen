@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "standchen.player.apps.ClientConfig",
-    "standchen.bot.apps.BotConfig",
 ]
 
 MIDDLEWARE = [

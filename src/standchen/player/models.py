@@ -42,7 +42,7 @@ class Repeat(Enum):
     ALL = 3
 
 
-class StandchenClient:
+class StandchenPlayer:
     def __init__(self):
         self.voice_client: Optional[VoiceClient] = None
 

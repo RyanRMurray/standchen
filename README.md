@@ -1,5 +1,10 @@
 # Standchen
-Music bot thingy
+A client for playing local music over Discord via a bot.
+
+## Upcoming features
+- Playlists
+- A django-enabled web app for managing tracks, playlists, and queueing multiple 'channels' at the same time
+- optional track pre-loading to ensure smooth transitions between tracks
 
 ## Setup
 1. Get dependencies:

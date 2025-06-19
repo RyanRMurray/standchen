@@ -9,8 +9,7 @@ from discord import app_commands
 from discord.ext.commands import Cog
 from discord.interactions import Interaction
 
-from standchen.signals import SET_VC
-from standchen.player.views import state
+from standchen.player.apps import standchen_player as api
 
 
 class StandchenBotCore(Cog, name="Standchen Discord core functionality"):
@@ -25,7 +24,7 @@ class StandchenBotCore(Cog, name="Standchen Discord core functionality"):
         if not user_voice:
             return "No voice channel detected - join a voice channel and try again."
 
-        await SET_VC.asend(sender=self.__class__, voice_channel=user_voice)
+        await api.set_vc(user_voice)
 
         return
 
@@ -50,24 +49,24 @@ class StandchenBotCore(Cog, name="Standchen Discord core functionality"):
     async def queue(self, interaction: Interaction, filepath: str):
         await self.ensure_vc(interaction)
 
-        # msg = await self.client.queue_local(filepath)
-        # await interaction.response.send_message(msg)
+        msg = await api.queue_local(filepath)
+        await interaction.response.send_message(msg)
 
-        # @app_commands.command(
-        #     description="Set whether to repeat a single track, a queue, or not at all."
-        # )
-        # @app_commands.choices(
-        #     setting=[
-        #         app_commands.Choice(name="None", value=1),
-        #         app_commands.Choice(name="Single", value=2),
-        #         app_commands.Choice(name="All", value=3),
-        #     ]
-        # )
-        # async def repeat(self, interaction: Interaction, setting: app_commands.Choice[int]):
-        #     await self.client.set_repeat(setting.value)
-        #     await interaction.response.send_message(f"Now repeating: {setting.name}")
+    @app_commands.command(
+        description="Set whether to repeat a single track, a queue, or not at all."
+    )
+    @app_commands.choices(
+        setting=[
+            app_commands.Choice(name="None", value=1),
+            app_commands.Choice(name="Single", value=2),
+            app_commands.Choice(name="All", value=3),
+        ]
+    )
+    async def repeat(self, interaction: Interaction, setting: app_commands.Choice[int]):
+        await api.set_repeat(setting.value)
+        await interaction.response.send_message(f"Now repeating: {setting.name}")
 
     @app_commands.command(description="Show the state of the queue.")
     async def show_queue(self, interaction: Interaction):
-        msg = state()
+        msg = api.pretty_print_state()
         await interaction.response.send_message(msg)
