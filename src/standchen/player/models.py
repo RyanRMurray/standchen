@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import mutagen
 import asyncio
 from enum import Enum
 import math
@@ -9,16 +12,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+VALID_EXTENSIONS = [".mp3", ".wav", ".ogg", ".flac"]
+
 
 class StandchenAudio(models.Model):
     # max length based on limitation of ubuntu filepaths
     filepath = models.CharField(max_length=4096, unique=True)
-    name = models.CharField(max_length=256)
+    title = models.CharField(max_length=256)
     length = models.IntegerField(null=True)
+    album = models.CharField(null=True)
+    artist = models.CharField(null=True)
 
     def get_name(self) -> str:
-        if self.name:
-            return self.name
+        if self.title:
+            return self.title
         return self.filepath
 
     def get_file(self) -> str:
@@ -33,7 +40,7 @@ class StandchenAudio(models.Model):
         return f"{mins}:{secs}"
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.pretty_length()}): {self.filepath}"
+        return f"{self.title} ({self.pretty_length()}): {self.filepath}"
 
 
 class Repeat(Enum):
@@ -85,7 +92,6 @@ class StandchenPlayer:
                 return
 
         self.voice_client = await new_voice_client.channel.connect()
-        logging.error("Set vc!!")
 
     @blocking
     async def set_repeat(self, setting: int):
@@ -104,23 +110,57 @@ class StandchenPlayer:
         # TODO: pass in ffmpeg args - e.g. skip to time
         self.voice_client.play(FFmpegPCMAudio(source=f), after=after)
 
+    async def add_track_by_filepath(
+        self, filepath: str, replace=False
+    ) -> StandchenAudio:
+        """
+        Validate a filepath is a track and add it to the library.
+        If replace is true, overwrites an entry with the same filepath (e.g. for bulk updating metadata)
+        Returns the new/existing audio track
+        """
+
+        existing = await StandchenAudio.objects.filter(filepath=filepath).afirst()
+        if existing is not None:
+            if not replace:
+                return existing
+            else:
+                # TODO: ensure this doesn't remove the item from playlists when they're implemented
+                await existing.adelete()
+
+        fp = Path(filepath)
+
+        # check file is valid
+        if not fp.is_file():
+            raise OSError("Filepath is not a file!")
+        if fp.suffix not in VALID_EXTENSIONS:
+            raise OSError(f"Invalid file type: '{fp.suffix}'")
+
+        # get data
+        data = mutagen.File(fp)
+        track = await StandchenAudio.objects.acreate(
+            filepath=filepath,
+            title=data.get("title"),
+            length=math.floor(
+                data.info.length * 1000
+            ),  # convert from float secs to int millisecs
+            album=data.get("album"),
+            artist=data.get("artist"),
+        )
+        return track
+
     @blocking
     async def queue_local(self, filepath: str) -> str:
         """Create an audio object from a filepath and add it to the queue"""
         try:
-            result = await StandchenAudio.objects.filter(filepath=filepath).afirst()
-            if result is None:
-                a = await StandchenAudio.objects.acreate(filepath=filepath)
-            else:
-                a = result
-        except OSError:
-            return f"Invalid filepath '{filepath}'"
+            track = await self.add_track_by_filepath(filepath)
+        except OSError as e:
+            return str(e)
         except Exception as e:
-            print(e)  # todo: logging
+            logging.error(e)
             return f"Failed to add filepath '{filepath}' to queue."
 
-        self.queue.append(a)
-        return f"Added track '{a.get_name()}' to queue."
+        self.queue.append(track)
+        return f"Added track '{track.get_name()}' to queue."
 
     async def execute(self):
         """Core audio stream loop logic"""
