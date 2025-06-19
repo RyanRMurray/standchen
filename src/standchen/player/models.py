@@ -139,12 +139,12 @@ class StandchenPlayer:
         data = mutagen.File(fp)
         track = await StandchenAudio.objects.acreate(
             filepath=filepath,
-            title=data.get("title"),
+            title=data.get("title")[0],
             length=math.floor(
                 data.info.length * 1000
             ),  # convert from float secs to int millisecs
-            album=data.get("album"),
-            artist=data.get("artist"),
+            album=data.get("album")[0],
+            artist=data.get("artist")[0],
         )
         return track
 
