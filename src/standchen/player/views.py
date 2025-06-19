@@ -25,6 +25,9 @@ async def end():
 
 def audios(request: HttpRequest):
     all_audios = StandchenAudio.objects.all()
+    if len(all_audios) == 0:
+        return HttpResponse("No tracks.")
+    logging.error(all_audios)
     template = loader.get_template("audios/audio_list.html")
     context = {"audio_list": all_audios}
     return HttpResponse(template.render(context, request))

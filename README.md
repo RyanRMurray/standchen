@@ -17,11 +17,11 @@ sudo apt-get install portaudio19-dev sqlite3
 
 ## Run
 Create a settings file using the `setting.json.example` file.
-- `guild_id` is the target server's ID
+- `guild_id` is the target server's ID. Find this by right-clicking the target server's icon in your server list.
 - `bot_token` is the [Discord Bot's](https://discordpy.readthedocs.io/en/stable/discord.html) auth token.
 
 Start poetry environment with `eval $(poetry env activate)`
-Start bot and site with `start`
+Start bot and site with `start runserver --noreload`
 
 ## Contribute
 1. Install extra dependencies with `poetry install --with dev`
