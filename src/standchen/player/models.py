@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import mutagen
+from mutagen import FileType
 import asyncio
 from enum import Enum
 import math
@@ -128,7 +129,6 @@ class StandchenPlayer:
                 await existing.adelete()
 
         fp = Path(filepath)
-
         # check file is valid
         if not fp.is_file():
             raise OSError("Filepath is not a file!")
@@ -137,14 +137,19 @@ class StandchenPlayer:
 
         # get data
         data = mutagen.File(fp)
+
+        if not isinstance(data, FileType):
+            raise OSError("File is invalid/corrupt.")
+
+        default_name = fp.name
         track = await StandchenAudio.objects.acreate(
             filepath=filepath,
-            title=data.get("title")[0],
+            title=data.get("title", [default_name])[0],
             length=math.floor(
                 data.info.length * 1000
             ),  # convert from float secs to int millisecs
-            album=data.get("album")[0],
-            artist=data.get("artist")[0],
+            album=data.get("album", [None])[0],
+            artist=data.get("artist", [None])[0],
         )
         return track
 
