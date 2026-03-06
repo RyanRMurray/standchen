@@ -1,4 +1,7 @@
 {
     "guild_id": "1234",
-    "bot_token": "AAAA"
+    "bot_token": "AAAA",
+    "permitted_filepaths": [
+        "C:\\Users\\Jimmy\\Music"
+    ]
 }

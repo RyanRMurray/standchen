@@ -1,0 +1,16 @@
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>
+        <label for="id_title">Title:</label>
+        <input id="id_title" type="text" name="title">
+    </p>
+    <p>
+        <label for="id_filepath">Filepath:</label>
+        <select id="id_filepath" name="filepath">
+            {% for fp in filepaths %}
+                <option value="{{ fp }}">{{ fp }}</option>
+            {% endfor %}
+        </select>
+    </p>
+    <input type="submit" value="Submit">
+</form>

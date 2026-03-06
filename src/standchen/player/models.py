@@ -11,16 +11,16 @@ from discord import FFmpegPCMAudio, VoiceClient
 from django.db import models
 import logging
 
-logger = logging.getLogger(__name__)
+from standchen.player.common import VALID_EXTENSIONS
 
-VALID_EXTENSIONS = [".mp3", ".wav", ".ogg", ".flac"]
+logger = logging.getLogger(__name__)
 
 
 class StandchenAudio(models.Model):
     # max length based on limitation of ubuntu filepaths
     filepath = models.CharField(max_length=4096, unique=True)
     title = models.CharField(max_length=256)
-    length = models.IntegerField(null=True)
+    length = models.IntegerField()
     album = models.CharField(null=True)
     artist = models.CharField(null=True)
 
