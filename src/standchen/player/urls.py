@@ -1,10 +1,15 @@
 from django.urls import path
 
-from . import views
+from standchen.player.views import pages, actions
 
 urlpatterns = [
-    path("audios/", views.audios, name="audios"),
-    path("audios/upload", views.upload, name="upload"),
-    path("queue", views.queue, name="queue"),
-    path("state", views.state, name="state"),
+    # rendered pages
+    path("audios/", pages.audios, name="audios"),
+    path("audios/upload", pages.upload, name="upload"),
+    path("queue", pages.queue, name="queue"),
+    path("state", pages.state, name="state"),
+    # api
+    path(
+        "play_immediate/<int:audio_id>", actions.play_immediate, name="play_immediate"
+    ),
 ]

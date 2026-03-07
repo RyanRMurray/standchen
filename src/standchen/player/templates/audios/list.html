@@ -4,9 +4,11 @@
     {% endfor %}
 {% endif %}
 {% if audio_list %}
+<form>
     <ul>
         {% for audio in audio_list %}
-            <li><b>{{audio.title}}</b> ({{audio.pretty_length}}): {{audio.filepath}}</li>
+            <li><a class="btn btn-outline" href="{% url 'play_immediate' audio.id %}">Play</a> <b>{{ audio.title }}</b> ({{ audio.pretty_length }}): {{ audio.filepath }}</li>
         {% endfor %}
     </ul>
+</form>
 {% endif %}

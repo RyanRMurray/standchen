@@ -6,7 +6,8 @@ import asyncio
 from enum import Enum
 import math
 import os
-from typing import List, Optional
+from typing import Optional
+from collections import deque
 from discord import FFmpegPCMAudio, VoiceClient
 from django.db import models
 import logging
@@ -55,7 +56,7 @@ class StandchenPlayer:
         self.voice_client: Optional[VoiceClient] = None
 
         self.current: Optional[StandchenAudio] = None
-        self.queue: List[StandchenAudio] = []
+        self.queue: deque[StandchenAudio] = deque()
         self.repeat = Repeat.NONE
         self.lock = asyncio.Lock()
         self.exiting = False
@@ -167,6 +168,15 @@ class StandchenPlayer:
         self.queue.append(track)
         return f"Added track '{track.get_name()}' to queue."
 
+    @blocking
+    async def play_immediate_by_id(self, id: int) -> str | None:
+        """Cancel current track and immediately play new track in its place in the queue"""
+        track = await StandchenAudio.objects.aget(id=id)
+
+        self.queue.appendleft(track)
+        self.current = None
+        self.voice_client.stop()
+
     async def execute(self):
         """Core audio stream loop logic"""
 
@@ -185,7 +195,7 @@ class StandchenPlayer:
             await self.lock.acquire()
 
             if not self.current:
-                self.current = self.queue.pop(0)
+                self.current = self.queue.popleft()
             # play
             try:
                 await self._play_track(self.current)
@@ -197,6 +207,7 @@ class StandchenPlayer:
                 print(f"Failed to play track '{n}'. Removing from queue.\nError: {e}")
 
             # handle repeat logic
+            # TODO: this doesn't work right if we want to display the name of the current track and its not Repeat.SINGLE
             if self.repeat == Repeat.NONE:
                 self.current = None
             if self.repeat == Repeat.ALL:
