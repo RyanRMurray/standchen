@@ -136,3 +136,5 @@ def load_settings(path: Path) -> dict:
 
 
 SETTINGS_FILE = load_settings(Path("settings.json"))
+
+MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"

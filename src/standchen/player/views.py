@@ -3,6 +3,7 @@ from typing import Optional
 import logging
 
 from django.template import loader
+from django.contrib import messages
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 from django.http import (
@@ -12,8 +13,8 @@ from django.http import (
     HttpResponseRedirect,
 )
 
-from standchen.player.common import get_permitted_filepaths
-from standchen.player.forms import NewAudioForm
+from standchen.player.common import get_files_and_directories, get_permitted_filepaths
+from standchen.player.forms import DUPLICATE_FILEPATH, NewAudioForm
 from standchen.player.models import StandchenAudio
 from standchen.player.apps import standchen_player as api
 
@@ -44,15 +45,49 @@ def state(request: HttpRequest):
     return HttpResponse(api.pretty_print_state(), request)
 
 
+def _upload_directory(dir: str) -> tuple[int, int, list[tuple[str, dict]]]:
+    files, _ = get_files_and_directories(dir)
+    new, dupes, errors = 0, 0, []
+
+    for f in files:
+        form = NewAudioForm({"filepath": f})
+        if form.is_valid():
+            form.save()
+            new += 1
+        elif DUPLICATE_FILEPATH in form.errors["filepath"]:
+            dupes += 1
+        else:
+            errors.append((f, form.errors))
+
+    return new, dupes, errors
+
+
 def upload(request: HttpRequest):
+    template = loader.get_template("audios/upload.html")
+    form = NewAudioForm()
+
+    if request.method == "POST" and request.POST["directory"]:
+        new, dupes, errors = _upload_directory(request.POST["directory"])
+        result_message = f"Added {new} new tracks.\n"
+        if dupes > 0:
+            result_message += f"Skipped {dupes} tracks that were already uploaded.\n"
+        if len(errors) > 0:
+            result_message += "The following filepaths were invalid:\n"
+            result_message += [f"{fp}: {errs}" for (fp, errs) in errors]
+
+        messages.success(request, result_message)
+        return HttpResponseRedirect(reverse("audios"))
+
     if request.method == "POST":
         form = NewAudioForm(request.POST)
         if form.is_valid():
             form.save()
+            result_message = f"Uploaded new track at filepath {form.filepath}"
+            messages.success(request, result_message)
             return HttpResponseRedirect(reverse("audios"))
 
-    template = loader.get_template("audios/upload.html")
-    context = {"filepaths": get_permitted_filepaths()}
+    filepaths, directories = get_permitted_filepaths()
+    context = {"form": form, "filepaths": filepaths, "directories": directories}
     return HttpResponse(template.render(context, request))
 
 

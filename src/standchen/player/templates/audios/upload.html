@@ -1,4 +1,19 @@
-<form method="POST" enctype="multipart/form-data">
+<h1>Directory Upload:</h1>
+<form method="POST">
+    {% csrf_token %}
+    <p>
+        <label for="id_directory">Directory:</label>
+        <select id="id_directory" name="directory">
+            {% for d in directories %}
+                <option value="{{ d }}">{{ d }}</option>
+            {% endfor %}
+        </select>
+    </p>
+    <input type="submit" value="Submit">
+</form>
+
+<h2>Single File Upload:</h2>
+<form method="POST">
     {% csrf_token %}
     <p>
         <label for="id_title">Title:</label>
@@ -14,3 +29,9 @@
     </p>
     <input type="submit" value="Submit">
 </form>
+{% if form.errors %}
+<div class="alert alert-danger">
+    Error:
+        {{ form.errors }}
+</div>
+{% endif %}

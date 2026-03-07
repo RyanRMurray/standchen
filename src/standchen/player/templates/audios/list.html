@@ -1,3 +1,8 @@
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert" role="alert">{{ message }}</div>
+    {% endfor %}
+{% endif %}
 {% if audio_list %}
     <ul>
         {% for audio in audio_list %}

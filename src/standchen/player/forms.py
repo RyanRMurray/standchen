@@ -7,12 +7,15 @@ import mutagen
 from mutagen import FileType
 from .models import StandchenAudio
 
+DUPLICATE_FILEPATH = "duplicate_filepath"
+
 
 class NewAudioForm(ModelForm):
     class Meta:
         model = StandchenAudio
         fields = ["filepath", "title", "length"]
 
+    filepath = CharField(error_messages={"unique": DUPLICATE_FILEPATH})
     title = CharField(required=False)
     length = IntegerField(required=False)
 
@@ -32,5 +35,4 @@ class NewAudioForm(ModelForm):
         cleaned_data["album"] = data.get("album", [None])[0]
         cleaned_data["artist"] = data.get("artist", [None])[0]
         cleaned_data["length"] = math.floor(data.info.length * 1000)
-        print(cleaned_data)
         return cleaned_data
