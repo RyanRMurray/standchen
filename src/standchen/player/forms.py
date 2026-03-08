@@ -2,10 +2,17 @@ import math
 from pathlib import Path
 from typing import Any
 
-from django.forms import IntegerField, ModelForm, CharField, ValidationError
+from django.forms import (
+    CheckboxSelectMultiple,
+    IntegerField,
+    ModelForm,
+    CharField,
+    ModelMultipleChoiceField,
+    ValidationError,
+)
 import mutagen
 from mutagen import FileType
-from .models import StandchenAudio
+from .models import Playlist, StandchenAudio
 
 DUPLICATE_FILEPATH = "duplicate_filepath"
 
@@ -36,3 +43,22 @@ class NewAudioForm(ModelForm):
         cleaned_data["artist"] = data.get("artist", [None])[0]
         cleaned_data["length"] = math.floor(data.info.length * 1000)
         return cleaned_data
+
+
+class StandchenAudioChoiceField(ModelMultipleChoiceField):
+    def label_from_instance(self, obj: StandchenAudio):
+        return f"**{obj.title} ({obj.pretty_length()}): {obj.filepath}"
+
+
+class NewPlaylistForm(ModelForm):
+    class Meta:
+        model = Playlist
+        fields = ["title", "tracks"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    title = CharField(max_length=256)
+    tracks = StandchenAudioChoiceField(
+        queryset=StandchenAudio.objects.all(), widget=CheckboxSelectMultiple
+    )

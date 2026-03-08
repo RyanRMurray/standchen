@@ -5,6 +5,7 @@ from standchen.player.views import pages, actions
 urlpatterns = [
     # rendered pages
     path("audios/", pages.audios, name="audios"),
+    path("audios/create_playlist", pages.create_playlist, name="create_playlist"),
     path("audios/upload", pages.upload, name="upload"),
     path("queue", pages.queue, name="queue"),
     path("state", pages.state, name="state"),

@@ -44,6 +44,17 @@ class StandchenAudio(models.Model):
     def __str__(self) -> str:
         return f"{self.title} ({self.pretty_length()}): {self.filepath}"
 
+    def html_str(self) -> str:
+        return f"<b>{self.title}</b> ({self.pretty_length()}): {self.filepath}"
+
+
+class Playlist(models.Model):
+    title = models.CharField(max_length=256)
+    tracks = models.ManyToManyField(StandchenAudio)
+
+    def html_str(self) -> str:
+        return f"<b>{self.title}</b> ({self.tracks.count()} tracks)"
+
 
 class Repeat(Enum):
     NONE = 1

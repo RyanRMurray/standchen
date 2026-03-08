@@ -14,8 +14,8 @@ from django.http import (
 )
 
 from standchen.player.common import get_files_and_directories, get_permitted_filepaths
-from standchen.player.forms import DUPLICATE_FILEPATH, NewAudioForm
-from standchen.player.models import StandchenAudio
+from standchen.player.forms import DUPLICATE_FILEPATH, NewAudioForm, NewPlaylistForm
+from standchen.player.models import Playlist, StandchenAudio
 from standchen.player.apps import standchen_player as api
 
 logger = logging.getLogger(__name__)
@@ -34,10 +34,11 @@ async def end():
 
 def audios(request: HttpRequest):
     all_audios = StandchenAudio.objects.all()
+    all_playlists = Playlist.objects.all()
     if len(all_audios) == 0:
         return HttpResponse("No tracks.")
     template = loader.get_template("audios/list.html")
-    context = {"audio_list": all_audios}
+    context = {"audio_list": all_audios, "playlist_list": all_playlists}
     return HttpResponse(template.render(context, request))
 
 
@@ -67,6 +68,7 @@ def upload(request: HttpRequest):
     form = NewAudioForm()
 
     if request.method == "POST" and request.POST["directory"]:
+        # upload everything under a directory
         new, dupes, errors = _upload_directory(request.POST["directory"])
         result_message = f"Added {new} new tracks.\n"
         if dupes > 0:
@@ -79,6 +81,7 @@ def upload(request: HttpRequest):
         return HttpResponseRedirect(reverse("audios"))
 
     if request.method == "POST":
+        # upload a single track
         form = NewAudioForm(request.POST)
         if form.is_valid():
             form.save()
@@ -104,3 +107,23 @@ async def queue(request: HttpRequest):
         return HttpResponse(result)
 
     return HttpResponseBadRequest("Request should have an audio ID or filepath")
+
+
+def create_playlist(request: HttpRequest):
+    template = loader.get_template("audios/create_playlist.html")
+    if request.method == "POST":
+        form = NewPlaylistForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+            result_message = f'Created new playlist "{form.cleaned_data["title"]}" with {len(form.cleaned_data["tracks"])} tracks.'
+            messages.success(request, result_message)
+            return HttpResponseRedirect(reverse("audios"))
+        else:
+            result_message = "Failed to create playlist (internal error)"
+            messages.error(request, result_message)
+
+    # TODO: dynamic query. currently just lists all tracks
+    form = NewPlaylistForm()
+    context = {"form": form}
+    return HttpResponse(template.render(context, request))
