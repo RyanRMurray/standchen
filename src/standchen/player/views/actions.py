@@ -15,3 +15,14 @@ async def play_immediate(request: HttpRequest, audio_id: int):
 
     # TODO: ajaxify this
     return HttpResponseRedirect(reverse("audios"))
+
+
+@require_GET
+async def play_playlist_immediate(request: HttpRequest, playlist_id: int):
+    result = await api.play_playlist_immediate_by_id(playlist_id)
+
+    if result:
+        messages.error(request, result)
+
+    # TODO: ajaxify this
+    return HttpResponseRedirect(reverse("audios"))

@@ -13,4 +13,9 @@ urlpatterns = [
     path(
         "play_immediate/<int:audio_id>", actions.play_immediate, name="play_immediate"
     ),
+    path(
+        "play_playlist_immediate/<int:playlist_id>",
+        actions.play_playlist_immediate,
+        name="play_playlist_immediate",
+    ),
 ]

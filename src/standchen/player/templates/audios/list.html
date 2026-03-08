@@ -3,6 +3,16 @@
         <div class="alert" role="alert">{{ message }}</div>
     {% endfor %}
 {% endif %}
+{% if playlist_list %}
+<h1>Playlists:</h1>
+<form>
+    <ul>
+        {% for playlist in playlist_list %}
+             <li><a class="btn btn-outline" href="{% url 'play_playlist_immediate' playlist.id %}">Play</a> {{ playlist.html_str | safe }}</li>
+        {% endfor %}
+    </ul>
+</form>
+{% endif %}
 {% if audio_list %}
 <h1>Tracks:</h1>
 <form>
@@ -12,10 +22,4 @@
         {% endfor %}
     </ul>
 </form>
-{% endif %}
-{% if playlist_list %}
-<h1>Playlists:</h1>
-{% for playlist in playlist_list %}
-<li>{{ playlist.html_str | safe }}</li>
-{% endfor %}
 {% endif %}

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from asgiref.sync import sync_to_async
 import mutagen
 from mutagen import FileType
 import asyncio
@@ -60,6 +61,11 @@ class Repeat(Enum):
     NONE = 1
     SINGLE = 2
     ALL = 3
+
+
+@sync_to_async
+def async_get_playlist_tracks(playlist: Playlist) -> list[StandchenAudio]:
+    return list(StandchenAudio.objects.filter(playlist=playlist).all())
 
 
 class StandchenPlayer:
@@ -185,6 +191,17 @@ class StandchenPlayer:
         track = await StandchenAudio.objects.aget(id=id)
 
         self.queue.appendleft(track)
+        self.current = None
+        self.voice_client.stop()
+
+    @blocking
+    async def play_playlist_immediate_by_id(self, id: int) -> str | None:
+        """Cancel current track and immediately play new playlist in its place in the queue"""
+        # TODO: options for ordering
+        playlist = await Playlist.objects.aget(id=id)
+        tracks = await async_get_playlist_tracks(playlist)
+
+        self.queue = deque(tracks)
         self.current = None
         self.voice_client.stop()
 
